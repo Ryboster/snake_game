@@ -30,7 +30,6 @@ public class Snake extends Frame implements WindowListener, KeyListener {
                 g.fillRect(entitySize[0], entitySize[1], entitySize[0], entitySize[1]);
                 setLocation(windowSize[0] /4 ,windowSize[1] / 8);
         }};
-        canvas.addKeyListener(this);
 
         frame.add(canvas);
         canvas.repaint();
