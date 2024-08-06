@@ -1,54 +1,79 @@
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
-//import java.awt.event.WindowListener;
-//import java.awt.event.WindowEvent;
-//import java.awt.event.WindowListener;
-
 
 public class Snake extends Frame implements WindowListener, KeyListener {
-    
-    // Starting point
+
+    // Get Constants
+
+    int[] SCREEN_DIMENSIONS = getScreenDimensions();
+    int[] WINDOW_SIZE = {SCREEN_DIMENSIONS[0] /2 , SCREEN_DIMENSIONS[1] /2};
+
+    int[] WINDOW_POSITION = {SCREEN_DIMENSIONS[0] /2 - (WINDOW_SIZE[0] /2),  // Center window within screen
+                           SCREEN_DIMENSIONS[1] /2 - (WINDOW_SIZE[0] / 3)};
+    int[] BOARD_SIZE = {WINDOW_SIZE[0] /4, WINDOW_SIZE[0] /4};
+    int[] BOARD_POSITION = {(WINDOW_SIZE[0] / 2) - BOARD_SIZE[0] /2,        // Center board within window
+                                   BOARD_SIZE[1] - BOARD_SIZE[1] / 10};
+    int[] CELL_SIZE = {BOARD_SIZE[0] / 12, BOARD_SIZE[1] / 12}; // The classic game of snake had a board of size of 12x12 cells
+
+    int[] playerPosition = {6,6};
+
     public static void main(String[] args) {
-
-        int[] dimensions = getScreenDimensions();
-        int[] windowSize = {dimensions[0]/2, dimensions[1]/2};
-        int[] offsetPosition = {windowSize[0] - (windowSize[0] /2),
-                                windowSize[1] - (windowSize[1] / 2)};
-
-        int[] boardSize = {windowSize[0] /2, windowSize[0] /2};
-        int[] entitySize = {boardSize[0] / 12, boardSize[1] / 12};
-
-        Snake frame = new Snake("Snek: the game", windowSize, offsetPosition);
+        // Entrypoint
         
-        frame.requestFocus();
+        Snake window = new Snake("Snek: The game");
         
+        Canvas canvas = window.getCanvas();
 
-        Canvas canvas = new Canvas() {
-            public void paint(Graphics g) {
-                g.drawRect(0,0, boardSize[0], boardSize[1]);
-                g.fillRect(entitySize[0], entitySize[1], entitySize[0], entitySize[1]);
-                setLocation(windowSize[0] /4 ,windowSize[1] / 8);
-        }};
+        for (int i = 0; i != window.BOARD_POSITION.length; i ++) {
+            System.out.println("SCREEN_DIMENSIONS: " + String.valueOf(window.SCREEN_DIMENSIONS[i]));
+            System.out.println("WINDOW_POSITION:  " + String.valueOf(window.WINDOW_POSITION[i]));
+        }
 
-        frame.add(canvas);
+        
+        window.add(canvas);
         canvas.repaint();
-        frame.setVisible(true);
-        frame.validate();
+        window.setVisible(true);
+        window.validate();
+        window.requestFocus();
+        
+        boolean status = window.getGameStatus();
+
+        while (status != true) {
+            //window.playGame();
+            status = window.getGameStatus();
+            canvas.repaint();
+            System.out.println(window.playerPosition[0]);
+
+        }
+
 
     }
 
-    // Actual game bit
+    public Canvas getCanvas(){
+        Canvas canvas = new Canvas() {
+            public void paint(Graphics g) {
+                g.drawRect(0,0, BOARD_SIZE[0], BOARD_SIZE[1]);
+                g.fillRect(playerPosition[0] * CELL_SIZE[0], playerPosition[1] * CELL_SIZE[1], CELL_SIZE[0], CELL_SIZE[1]);
+                setLocation(BOARD_POSITION[0], BOARD_POSITION[1]);
 
-    public Snake(String FrameTitle, int[] windowSize, int[] offsetPosition){
+        }};
+        return canvas;
+    }
+
+    // Class constructor
+    public Snake (String FrameTitle) {
+        
+        
         //Sample 02: Set Layout and Title
         super(FrameTitle);
+        
+        
+        SCREEN_DIMENSIONS = getScreenDimensions();
         setLayout(new BorderLayout());
-        
-        
 
-        setSize(windowSize[0], windowSize[1] + (windowSize[1] / 8));
-        setLocation(offsetPosition[0], offsetPosition[1]);
+        setSize(WINDOW_SIZE[0], WINDOW_SIZE[1] + (WINDOW_SIZE[1] / 8));
+        setLocation(WINDOW_POSITION[0], WINDOW_POSITION[1]);
 
         Panel panel = new Panel(new FlowLayout());
         Button button = new Button("New Game");
@@ -57,8 +82,8 @@ public class Snake extends Frame implements WindowListener, KeyListener {
 
         add(panel, BorderLayout.SOUTH);
         
-        addWindowListener(this);
         addKeyListener(this);
+        addWindowListener(this);
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 System.out.println(e);
@@ -106,7 +131,25 @@ public class Snake extends Frame implements WindowListener, KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        System.out.println(e.getKeyChar());
+        switch(e.getKeyCode()) {
+            case KeyEvent.VK_LEFT:
+                playerPosition[0] --;
+                break;
+            case KeyEvent.VK_RIGHT:
+                playerPosition[0] ++;
+                break;
+            case KeyEvent.VK_UP:
+                playerPosition[1] --;
+                break;
+            case KeyEvent.VK_DOWN:
+                playerPosition[1] ++;
+                break;
+            
+        }
+
+
+
+
     }
 
     @Override
@@ -119,26 +162,34 @@ public class Snake extends Frame implements WindowListener, KeyListener {
     }
 
 
-    public static int[] getScreenDimensions() {
-        Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+    public int[] getScreenDimensions() {
+        GraphicsConfiguration graphicsConfig = getGraphicsConfiguration();
+        Rectangle bounds = graphicsConfig.getBounds();
+
+        
+        //Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
         int[] dimensions = new int[2];
-        dimensions[0] = (int)size.getWidth();
-        dimensions[1] = (int)size.getHeight();
+        dimensions[0] = (int)bounds.width;
+        dimensions[1] = (int)bounds.height;
         return dimensions;
     }
-
-    public static void startGame() {
-        while(true) {
-
-
-        }
+    
+    public boolean getGameStatus() {
+        return false;
     }
-}
 
+    //public void playGame() {
+    //    while(true) {
+    //        
 //
+//
+//
+    //        try {
+    //            Thread.sleep(1000);
+    //        } catch(Exception e) {
+    //            System.out.println(e);
+    //        }
+    //    }
+    //}
 
-// Geeksforgeeks (2024) Java AWT Tutorial. Available at: https://www.geeksforgeeks.org/java-awt-tutorial/ (Accessed: 29th July 2024).
-// Dhamodaran, Sivaraman. (2023) Java Examples: Awt Frame Window. Available at: https://owlcation.com/stem/Java-Examples-Awt-Frame-Window (Accessed: 29th July 2024).
-// https://www.geeksforgeeks.org/java-awt-button/
-// Geeksforgeeks (2020) Java Program to Print Screen Resolution. Available at: https://www.geeksforgeeks.org/java-program-to-print-screen-resolution/ (Accessed: 2nd August 2024).
-// Geeksforgeeks (2024) Break Statement in Java. Available at: https://www.geeksforgeeks.org/break-statement-in-java/ (Accessed: 2nd August 2024).
+}
