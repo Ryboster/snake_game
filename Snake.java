@@ -1,6 +1,7 @@
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import board.Board;
 
 public class Snake extends Frame implements WindowListener, KeyListener {
 
@@ -11,28 +12,32 @@ public class Snake extends Frame implements WindowListener, KeyListener {
 
     int[] WINDOW_POSITION = {SCREEN_DIMENSIONS[0] /2 - (WINDOW_SIZE[0] /2),  // Center window within screen
                            SCREEN_DIMENSIONS[1] /2 - (WINDOW_SIZE[0] / 3)};
+
     int[] BOARD_SIZE = {WINDOW_SIZE[0] /4, WINDOW_SIZE[0] /4};
     int[] BOARD_POSITION = {(WINDOW_SIZE[0] / 2) - BOARD_SIZE[0] /2,        // Center board within window
                                    BOARD_SIZE[1] - BOARD_SIZE[1] / 10};
-    int[] CELL_SIZE = {BOARD_SIZE[0] / 12, BOARD_SIZE[1] / 12}; // The classic game of snake had a board of size of 12x12 cells
 
+    int[] MAP_SIZE_IN_CELLS = {12, 12};
+    int[] CELL_SIZE = {BOARD_SIZE[0] / MAP_SIZE_IN_CELLS[0], 
+                        BOARD_SIZE[1] / MAP_SIZE_IN_CELLS[1]}; // The classic game of snake had a board of size of 12x12 cells
+
+
+    int[] playerDirection = {0,0};
     int[] playerPosition = {6,6};
+    int score = 0;
 
     public static void main(String[] args) {
         // Entrypoint
         
         Snake window = new Snake("Snek: The game");
-        
-        Canvas canvas = window.getCanvas();
+        Board board = new Board();
 
-        for (int i = 0; i != window.BOARD_POSITION.length; i ++) {
-            System.out.println("SCREEN_DIMENSIONS: " + String.valueOf(window.SCREEN_DIMENSIONS[i]));
-            System.out.println("WINDOW_POSITION:  " + String.valueOf(window.WINDOW_POSITION[i]));
-        }
+        Canvas gameBoard = board.getBoard(window.BOARD_SIZE, window.playerPosition, window.BOARD_POSITION);
+
+        window.add(gameBoard);
 
         
-        window.add(canvas);
-        canvas.repaint();
+
         window.setVisible(true);
         window.validate();
         window.requestFocus();
@@ -42,23 +47,18 @@ public class Snake extends Frame implements WindowListener, KeyListener {
         while (status != true) {
             //window.playGame();
             status = window.getGameStatus();
-            canvas.repaint();
-            System.out.println(window.playerPosition[0]);
-
+            
+            gameBoard.repaint();
+            window.updatePlayerPosition();
+            
+            try {
+                Thread.sleep(500);
+            } catch(Exception e) {
+                System.out.println(e);
+            }
         }
 
 
-    }
-
-    public Canvas getCanvas(){
-        Canvas canvas = new Canvas() {
-            public void paint(Graphics g) {
-                g.drawRect(0,0, BOARD_SIZE[0], BOARD_SIZE[1]);
-                g.fillRect(playerPosition[0] * CELL_SIZE[0], playerPosition[1] * CELL_SIZE[1], CELL_SIZE[0], CELL_SIZE[1]);
-                setLocation(BOARD_POSITION[0], BOARD_POSITION[1]);
-
-        }};
-        return canvas;
     }
 
     // Class constructor
@@ -89,6 +89,48 @@ public class Snake extends Frame implements WindowListener, KeyListener {
                 System.out.println(e);
             }   
         });
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        switch(e.getKeyCode()) {
+            case KeyEvent.VK_LEFT:
+                playerDirection[0] = -1;
+                playerDirection[1] = 0;
+                break;
+            case KeyEvent.VK_RIGHT:
+                playerDirection[0] = 1;
+                playerDirection[1] = 0;                
+                break;
+            case KeyEvent.VK_UP:
+                playerDirection[0] = 0;
+                playerDirection[1] = -1;                
+                break;
+            case KeyEvent.VK_DOWN:
+                playerDirection[0] = 0;
+                playerDirection[1] = 1;                
+                break;   
+        }
+    }
+
+    public void updatePlayerPosition() {
+        if (playerDirection[0] != 0) {
+            playerPosition[0] += playerDirection[0];
+            handleMapEdge(playerPosition[0] + playerDirection[0], 0);
+
+        } else {
+            playerPosition[1] += playerDirection[1];
+            handleMapEdge(playerPosition[1] + playerDirection[1], 1);
+
+        }
+    }
+    public void handleMapEdge(int sum, int index) {
+        if (sum > MAP_SIZE_IN_CELLS[index]) {
+            playerPosition[index] = 0;
+        } else if (sum < 0) {
+            playerPosition[index] = MAP_SIZE_IN_CELLS[index];
+        }
 
     }
 
@@ -129,32 +171,10 @@ public class Snake extends Frame implements WindowListener, KeyListener {
 
     }
 
-    @Override
-    public void keyPressed(KeyEvent e) {
-        switch(e.getKeyCode()) {
-            case KeyEvent.VK_LEFT:
-                playerPosition[0] --;
-                break;
-            case KeyEvent.VK_RIGHT:
-                playerPosition[0] ++;
-                break;
-            case KeyEvent.VK_UP:
-                playerPosition[1] --;
-                break;
-            case KeyEvent.VK_DOWN:
-                playerPosition[1] ++;
-                break;
-            
-        }
-
-
-
-
-    }
+    
 
     @Override
     public void keyReleased(KeyEvent e) {
-        System.out.println(e.getKeyChar());
     }
 
     @Override
@@ -175,21 +195,11 @@ public class Snake extends Frame implements WindowListener, KeyListener {
     }
     
     public boolean getGameStatus() {
-        return false;
+        if (score < 10) {
+            return false;
+        } else {
+            return true;
+        }
     }
-
-    //public void playGame() {
-    //    while(true) {
-    //        
-//
-//
-//
-    //        try {
-    //            Thread.sleep(1000);
-    //        } catch(Exception e) {
-    //            System.out.println(e);
-    //        }
-    //    }
-    //}
 
 }
